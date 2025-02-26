@@ -10,7 +10,6 @@ class Gmail
     const SEND_URI = 'https://www.googleapis.com/upload/gmail/v1/users/me/messages/send';
     const RECV_URI = 'https://www.googleapis.com/gmail/v1/users/me/messages';
 
-
     private Config $gmail;
 
     public function __construct()
@@ -60,6 +59,7 @@ class Gmail
             ]),
         ]);
         $response = json_decode($response, true);
+        if (!isset($response['refresh_token'])) return;
         $this->gmail->config['access_token'] = $response['access_token'];
         $this->gmail->config['refresh_token'] = $response['refresh_token'];
         $this->gmail->config['expires_at'] = time() + $response['expires_in'] - 30;
