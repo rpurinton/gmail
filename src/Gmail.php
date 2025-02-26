@@ -83,7 +83,7 @@ class Gmail
         $this->gmail->save();
     }
 
-    public function send(string $from, string $to, string $subject, string $body)
+    public function send(string $from, string $to, string $subject, string $body, array $attachments = [], array $cc = [], array $bcc = [])
     {
         if (time() > $this->gmail->config["expires_at"]) {
             $this->refresh_token();
@@ -91,12 +91,31 @@ class Gmail
 
         $rawMessageString = "From: $from\r\n";
         $rawMessageString .= "To: $to\r\n";
-        $rawMessageString .= 'Subject: =?utf-8?B?' . base64_encode($subject) . "?=\r\n";
+        $rawMessageString .= "Subject: $subject\r\n";
+        if (!empty($cc)) {
+            $rawMessageString .= "Cc: " . implode(", ", $cc) . "\r\n";
+        }
+        if (!empty($bcc)) {
+            $rawMessageString .= "Bcc: " . implode(", ", $bcc) . "\r\n";
+        }
         $rawMessageString .= "MIME-Version: 1.0\r\n";
-        $rawMessageString .= "Content-Type: text/html; charset=utf-8\r\n";
-        $rawMessageString .= 'Content-Transfer-Encoding: quoted-printable' . "\r\n\r\n";
-        $rawMessageString .= "$body\r\n";
-
+        $rawMessageString .= "Content-Type: multipart/mixed; boundary=\"foo_bar_baz\"\r\n";
+        $rawMessageString .= "\r\n--foo_bar_baz\r\n";
+        $rawMessageString .= "Content-Type: text/html; charset=\"UTF-8\"\r\n";
+        $rawMessageString .= "Content-Transfer-Encoding: 7bit\r\n";
+        $rawMessageString .= "\r\n$body\r\n";
+        foreach ($attachments as $attachment) {
+            if (!file_exists($attachment)) {
+                continue;
+            }
+            $rawMessageString .= "\r\n--foo_bar_baz\r\n";
+            $rawMessageString .= "Content-Type: " . mime_content_type($attachment) . "; name=\"" . basename($attachment) . "\"\r\n";
+            $rawMessageString .= "Content-Description: " . basename($attachment) . "\r\n";
+            $rawMessageString .= "Content-Disposition: attachment; filename=\"" . basename($attachment) . "\"; size=" . filesize($attachment) . ";\r\n";
+            $rawMessageString .= "Content-Transfer-Encoding: base64\r\n";
+            $rawMessageString .= "\r\n" . chunk_split(base64_encode(file_get_contents($attachment))) . "\r\n";
+        }
+        $rawMessageString .= "\r\n--foo_bar_baz--";
         $response = HTTPS::request([
             'url' => self::SEND_URI,
             'method' => 'POST',
@@ -107,7 +126,6 @@ class Gmail
             ],
             'body' => $rawMessageString,
         ]);
-
         return $response;
     }
 }
