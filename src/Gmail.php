@@ -7,8 +7,6 @@ use RPurinton\{Config, HTTPS};
 class Gmail
 {
     const SCOPE = "https://mail.google.com/";
-    const AUTH_URI = "https://accounts.google.com/o/oauth2/auth";
-    const TOKEN_URI = "https://accounts.google.com/o/oauth2/token";
     const SEND_URI = 'https://www.googleapis.com/upload/gmail/v1/users/me/messages/send';
     const RECV_URI = 'https://www.googleapis.com/gmail/v1/users/me/messages';
 
@@ -18,17 +16,21 @@ class Gmail
     public function __construct()
     {
         $this->gmail = Config::open("Gmail", [
-            "client_id"     => "string",
-            "client_secret" => "string",
+            "web" => [
+                "client_id"     => "string",
+                "client_secret" => "string",
+                "auth_uri"      => "string",
+                "token_uri"     => "string",
+            ],
         ]);
     }
 
     public function init()
     {
-        $client_id = $this->gmail->config['client_id'];
-        $client_secret = $this->gmail->config['client_secret'];
+        $client_id = $this->gmail->config['web']['client_id'];
+        $client_secret = $this->gmail->config['web']['client_secret'];
         $redirect_uri = "https://" . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"];
-        $first_url = self::AUTH_URI . "?" . http_build_query([
+        $first_url = $this->gmail->config['web']['auth_uri'] . "?" . http_build_query([
             "client_id"              => $client_id,
             "redirect_uri"           => $redirect_uri,
             "scope"                  => self::SCOPE,
@@ -37,15 +39,13 @@ class Gmail
             "state"                  => "state_parameter_passthrough_value",
             "response_type"          => "code",
         ]);
-
         if (!isset($_GET["code"])) {
             header("Location: $first_url");
             exit;
         }
-
         $code = $_GET["code"];
         $response = HTTPS::request([
-            'url' => self::TOKEN_URI,
+            'url' => $this->gmail->config['web']['token_uri'],
             'method' => 'POST',
             'headers' => ['Content-Type: application/x-www-form-urlencoded'],
             'body' => http_build_query([
@@ -66,12 +66,12 @@ class Gmail
     public function refresh_token()
     {
         $response = HTTPS::request([
-            'url' => self::TOKEN_URI,
+            'url' => $this->gmail->config['web']['token_uri'],
             'method' => 'POST',
             'headers' => ['Content-Type: application/x-www-form-urlencoded'],
             'body' => http_build_query([
-                'client_id'     => $this->gmail->config['client_id'],
-                'client_secret' => $this->gmail->config['client_secret'],
+                'client_id'     => $this->gmail->config['web']['client_id'],
+                'client_secret' => $this->gmail->config['web']['client_secret'],
                 'refresh_token' => $this->gmail->config['refresh_token'],
                 'grant_type'    => 'refresh_token',
             ]),
