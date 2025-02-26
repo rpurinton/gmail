@@ -59,7 +59,7 @@ class Gmail
             ]),
         ]);
         $response = json_decode($response, true);
-        if (!isset($response['refresh_token'])) return;
+        if (!isset($response['access_token'], $response['refresh_token'], $response['expires_in'])) return;
         $this->gmail->config['access_token'] = $response['access_token'];
         $this->gmail->config['refresh_token'] = $response['refresh_token'];
         $this->gmail->config['expires_at'] = time() + $response['expires_in'] - 30;
