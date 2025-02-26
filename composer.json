@@ -16,6 +16,7 @@
     ],
     "minimum-stability": "stable",
     "require": {
-        "google/apiclient": "^2.18"
+        "rpurinton/config": "^1.0.23",
+        "rpurinton/https": "^1.0"
     }
 }
