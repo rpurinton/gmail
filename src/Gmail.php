@@ -86,14 +86,14 @@ class Gmail
         $this->gmail->save();
     }
 
-    public function send(string $from, string $to, string $subject, string $body, array $attachments = [], array $cc = [], array $bcc = [])
+    public function send(string $from, array $to, string $subject, string $body, array $attachments = [], array $cc = [], array $bcc = [])
     {
         if (time() > $this->gmail->config["expires_at"]) {
             $this->refresh_token();
         }
 
         $rawMessageString = "From: $from\r\n";
-        $rawMessageString .= "To: $to\r\n";
+        $rawMessageString .= "To: " . implode(", ", $to) . "\r\n";
         $rawMessageString .= "Subject: $subject\r\n";
         if (!empty($cc)) {
             $rawMessageString .= "Cc: " . implode(", ", $cc) . "\r\n";
