@@ -10,7 +10,6 @@ class Gmail
     const SEND_URI = 'https://www.googleapis.com/upload/gmail/v1/users/me/messages/send';
     const RECV_URI = 'https://www.googleapis.com/gmail/v1/users/me/messages';
 
-
     private Config $gmail;
 
     public function __construct()
@@ -129,6 +128,63 @@ class Gmail
             ],
             'body' => $rawMessageString,
         ]);
+        return $response;
+    }
+
+    public function listMessages($query = '', $maxResults = 10)
+    {
+        if (time() > $this->gmail->config["expires_at"]) {
+            $this->refresh_token();
+        }
+
+        $response = HTTPS::request([
+            'url' => self::RECV_URI . '?' . http_build_query([
+                'q' => $query,
+                'maxResults' => $maxResults,
+            ]),
+            'method' => 'GET',
+            'headers' => [
+                "Authorization: Bearer " . $this->gmail->config['access_token'],
+                'Accept: application/json',
+            ],
+        ]);
+
+        return json_decode($response, true);
+    }
+
+    public function getMessage($messageId)
+    {
+        if (time() > $this->gmail->config["expires_at"]) {
+            $this->refresh_token();
+        }
+
+        $response = HTTPS::request([
+            'url' => self::RECV_URI . '/' . $messageId,
+            'method' => 'GET',
+            'headers' => [
+                "Authorization: Bearer " . $this->gmail->config['access_token'],
+                'Accept: application/json',
+            ],
+        ]);
+
+        return json_decode($response, true);
+    }
+
+    public function deleteMessage($messageId)
+    {
+        if (time() > $this->gmail->config["expires_at"]) {
+            $this->refresh_token();
+        }
+
+        $response = HTTPS::request([
+            'url' => self::RECV_URI . '/' . $messageId,
+            'method' => 'DELETE',
+            'headers' => [
+                "Authorization: Bearer " . $this->gmail->config['access_token'],
+                'Accept: application/json',
+            ],
+        ]);
+
         return $response;
     }
 }
