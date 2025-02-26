@@ -1,4 +1,20 @@
 {
+    "name": "rpurinton/gmail",
+    "description": "A Gmail Library for PHP",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Rpurinton\\Gmail\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Russell Purinton",
+            "email": "russell.purinton@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
     "require": {
         "google/apiclient": "^2.18"
     }
