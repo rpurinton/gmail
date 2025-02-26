@@ -30,6 +30,9 @@ class Gmail
         $client_id = $this->gmail->config['web']['client_id'];
         $client_secret = $this->gmail->config['web']['client_secret'];
         $redirect_uri = "https://" . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"];
+        if (strpos($redirect_uri, "?") !== false) {
+            $redirect_uri = substr($redirect_uri, 0, strpos($redirect_uri, "?"));
+        }
         $first_url = $this->gmail->config['web']['auth_uri'] . "?" . http_build_query([
             "client_id"              => $client_id,
             "redirect_uri"           => $redirect_uri,
