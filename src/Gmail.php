@@ -187,4 +187,36 @@ class Gmail
 
         return $response;
     }
+
+public function getAttachmentId($messageId)
+{
+    if (time() > $this->gmail->config["expires_at"]) {
+        $this->refresh_token();
+    }
+
+    $response = HTTPS::request([
+        'url' => self::RECV_URI . '/' . $messageId,
+        'method' => 'GET',
+        'headers' => [
+            "Authorization: Bearer " . $this->gmail->config['access_token'],
+            'Accept: application/json',
+        ],
+    ]);
+
+    $message = json_decode($response, true);
+    $attachmentIds = [];
+
+    if (isset($message['payload']['parts'])) {
+        foreach ($message['payload']['parts'] as $part) {
+            if (isset($part['filename']) && !empty($part['filename']) && isset($part['body']['attachmentId'])) {
+                $attachmentIds[] = [
+                    'filename' => $part['filename'],
+                    'attachmentId' => $part['body']['attachmentId'],
+                ];
+            }
+        }
+    }
+
+    return $attachmentIds;
+}
 }
