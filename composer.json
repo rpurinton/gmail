@@ -16,8 +16,8 @@
     ],
     "minimum-stability": "stable",
     "require": {
-        "rpurinton/config": "^1.0.23",
+        "rpurinton/config": "^1.0.24",
         "rpurinton/https": "^1.0.18"
     },
-    "version": "1.0.5"
+    "version": "1.0.7"
 }
