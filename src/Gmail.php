@@ -232,8 +232,7 @@ class Gmail
             $list = json_decode($response, true);
             if (empty($list['messages'])) return ['Results' => 0];
             $messages = [
-                'Total Results' => $list['resultSizeEstimate'],
-                'Showing Results' => count($list['messages']),
+                'Showing' => count($list['messages']) . " of " . $list['resultSizeEstimate'],
                 'Page' => $pageNumber . " of " . ceil($list['resultSizeEstimate'] / $maxResults),
             ];
             foreach ($list['messages'] as $message) $messages['Messages'][] = $this->getHeaders($message['id']);
