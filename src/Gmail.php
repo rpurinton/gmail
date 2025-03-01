@@ -186,6 +186,8 @@ class Gmail
                 $headers[strtolower($header['name'])] = $header['value'];
             }
         }
+        $headers['attachments'] = $this->getAttachmentIds($message['id']);
+        $headers = array_merge(array_flip(['from', 'to', 'cc', 'bcc', 'subject', 'date', 'attachments']), $headers);
         return $headers;
     }
 
@@ -223,7 +225,7 @@ class Gmail
         return $response;
     }
 
-    public function getAttachmentId($messageId)
+    public function getAttachmentIds($messageId)
     {
         if (time() > $this->gmail->config["expires_at"]) $this->refresh_token();
         $response = HTTPS::request([
