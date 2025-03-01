@@ -86,14 +86,14 @@ class Gmail
         $this->gmail->save();
     }
 
-    public function send(string $from, string $to, string $subject, string $body, array $attachments = [], array $cc = [], array $bcc = [])
+    public function send(string $from, array $to, string $subject, string $body, array $attachments = [], array $cc = [], array $bcc = [])
     {
         if (time() > $this->gmail->config["expires_at"]) {
             $this->refresh_token();
         }
 
         $rawMessageString = "From: $from\r\n";
-        $rawMessageString .= "To: $to\r\n";
+        $rawMessageString .= "To: " . implode(", ", $to) . "\r\n";
         $rawMessageString .= "Subject: $subject\r\n";
         if (!empty($cc)) {
             $rawMessageString .= "Cc: " . implode(", ", $cc) . "\r\n";
@@ -130,5 +130,94 @@ class Gmail
             'body' => $rawMessageString,
         ]);
         return $response;
+    }
+
+    public function listMessages($query = '', $maxResults = 10)
+    {
+        if (time() > $this->gmail->config["expires_at"]) {
+            $this->refresh_token();
+        }
+
+        $response = HTTPS::request([
+            'url' => self::RECV_URI . '?' . http_build_query([
+                'q' => $query,
+                'maxResults' => $maxResults,
+            ]),
+            'method' => 'GET',
+            'headers' => [
+                "Authorization: Bearer " . $this->gmail->config['access_token'],
+                'Accept: application/json',
+            ],
+        ]);
+
+        return json_decode($response, true);
+    }
+
+    public function getMessage($messageId)
+    {
+        if (time() > $this->gmail->config["expires_at"]) {
+            $this->refresh_token();
+        }
+
+        $response = HTTPS::request([
+            'url' => self::RECV_URI . '/' . $messageId,
+            'method' => 'GET',
+            'headers' => [
+                "Authorization: Bearer " . $this->gmail->config['access_token'],
+                'Accept: application/json',
+            ],
+        ]);
+
+        return json_decode($response, true);
+    }
+
+    public function deleteMessage($messageId)
+    {
+        if (time() > $this->gmail->config["expires_at"]) {
+            $this->refresh_token();
+        }
+
+        $response = HTTPS::request([
+            'url' => self::RECV_URI . '/' . $messageId,
+            'method' => 'DELETE',
+            'headers' => [
+                "Authorization: Bearer " . $this->gmail->config['access_token'],
+                'Accept: application/json',
+            ],
+        ]);
+
+        return $response;
+    }
+
+    public function getAttachmentId($messageId)
+    {
+        if (time() > $this->gmail->config["expires_at"]) {
+            $this->refresh_token();
+        }
+
+        $response = HTTPS::request([
+            'url' => self::RECV_URI . '/' . $messageId,
+            'method' => 'GET',
+            'headers' => [
+                "Authorization: Bearer " . $this->gmail->config['access_token'],
+                'Accept: application/json',
+            ],
+        ]);
+
+        $message = json_decode($response, true);
+        $attachmentIds = [];
+
+        if (isset($message['payload']['parts'])) {
+            foreach ($message['payload']['parts'] as $part) {
+                if (isset($part['filename']) && !empty($part['filename']) && isset($part['body']['attachmentId'])) {
+                    $attachmentIds[] = [
+                        'filename' => $part['filename'],
+                        'attachmentId' => $part['body']['attachmentId'],
+                    ];
+                }
+            }
+        }
+
+        return $attachmentIds;
     }
 }
