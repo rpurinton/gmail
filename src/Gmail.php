@@ -179,7 +179,7 @@ class Gmail
             'id' => $message['id'],
             'thread' => $message['threadId'],
             'labels' => $message['labelIds'],
-            'Snippet' => $message['snippet'],
+            'snippet' => $message['snippet'],
         ];
         $headers['to'] = $headers['cc'] = $headers['bcc'] = [];
         foreach ($message['payload']['headers'] as $header) if (in_array($header['name'], ['From', 'To', 'Cc', 'Bcc', 'Subject', 'Date']))
