@@ -132,7 +132,7 @@ class Gmail
         return $response;
     }
 
-    public function list($query = '', $maxResults = 10)
+    public function list($query = '', $maxResults = 10, $pageNumber = 1)
     {
         if (time() > $this->gmail->config["expires_at"]) {
             $this->refresh_token();
@@ -142,6 +142,7 @@ class Gmail
             'url' => self::RECV_URI . '?' . http_build_query([
                 'q' => $query,
                 'maxResults' => $maxResults,
+                'pageToken' => $pageNumber,
             ]),
             'method' => 'GET',
             'headers' => [
@@ -150,6 +151,20 @@ class Gmail
             ],
         ]);
 
+        return json_decode($response, true);
+    }
+
+    public function get($messageId)
+    {
+        if (time() > $this->gmail->config["expires_at"]) $this->refresh_token();
+        $response = HTTPS::request([
+            'url' => self::RECV_URI . '/' . $messageId,
+            'method' => 'GET',
+            'headers' => [
+                "Authorization: Bearer " . $this->gmail->config['access_token'],
+                'Accept: application/json',
+            ],
+        ]);
         return json_decode($response, true);
     }
 
