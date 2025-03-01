@@ -177,9 +177,9 @@ class Gmail
     {
         $headers = [
             'id' => $message['id'],
-            'threadId' => $message['threadId'],
-            'labelIds' => $message['labelIds'],
-            'snippet' => $message['snippet'],
+            'thread' => $message['threadId'],
+            'labels' => $message['labelIds'],
+            'Snippet' => $message['snippet'],
         ];
         foreach ($message['payload']['headers'] as $header) {
             if (in_array($header['name'], ['From', 'To', 'Cc', 'Bcc', 'Subject', 'Date'])) {
@@ -187,7 +187,7 @@ class Gmail
             }
         }
         $headers['attachments'] = $this->getAttachmentIds($message['id']);
-        $headers = array_merge(array_flip(['from', 'to', 'cc', 'bcc', 'subject', 'date', 'attachments']), $headers);
+        $headers = array_merge(array_flip(['id', 'thread', 'labels', 'from', 'to', 'cc', 'bcc', 'subject', 'date', 'snippet', 'attachments']), $headers);
         return $headers;
     }
 
