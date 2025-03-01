@@ -132,7 +132,7 @@ class Gmail
         return $response;
     }
 
-    public function listMessages($query = '', $maxResults = 10)
+    public function list($query = '', $maxResults = 10)
     {
         if (time() > $this->gmail->config["expires_at"]) {
             $this->refresh_token();
@@ -153,12 +153,9 @@ class Gmail
         return json_decode($response, true);
     }
 
-    public function getMessage($messageId)
+    public function read($messageId)
     {
-        if (time() > $this->gmail->config["expires_at"]) {
-            $this->refresh_token();
-        }
-
+        if (time() > $this->gmail->config["expires_at"]) $this->refresh_token();
         $response = HTTPS::request([
             'url' => self::RECV_URI . '/' . $messageId,
             'method' => 'GET',
@@ -167,34 +164,32 @@ class Gmail
                 'Accept: application/json',
             ],
         ]);
-
+        $this->update($messageId, [], ['UNREAD']);
         return json_decode($response, true);
     }
 
-    public function deleteMessage($messageId)
+    public function update($messageId, $labelsToAdd = [], $labelsToRemove = [])
     {
-        if (time() > $this->gmail->config["expires_at"]) {
-            $this->refresh_token();
-        }
-
+        if (time() > $this->gmail->config["expires_at"]) $this->refresh_token();
         $response = HTTPS::request([
-            'url' => self::RECV_URI . '/' . $messageId,
-            'method' => 'DELETE',
+            'url' => self::RECV_URI . '/' . $messageId . '/modify',
+            'method' => 'POST',
             'headers' => [
                 "Authorization: Bearer " . $this->gmail->config['access_token'],
                 'Accept: application/json',
+                'Content-Type: application/json',
             ],
+            'body' => json_encode([
+                'addLabelIds' => $labelsToAdd,
+                'removeLabelIds' => $labelsToRemove,
+            ]),
         ]);
-
         return $response;
     }
 
     public function getAttachmentId($messageId)
     {
-        if (time() > $this->gmail->config["expires_at"]) {
-            $this->refresh_token();
-        }
-
+        if (time() > $this->gmail->config["expires_at"]) $this->refresh_token();
         $response = HTTPS::request([
             'url' => self::RECV_URI . '/' . $messageId,
             'method' => 'GET',
@@ -203,10 +198,8 @@ class Gmail
                 'Accept: application/json',
             ],
         ]);
-
         $message = json_decode($response, true);
         $attachmentIds = [];
-
         if (isset($message['payload']['parts'])) {
             foreach ($message['payload']['parts'] as $part) {
                 if (isset($part['filename']) && !empty($part['filename']) && isset($part['body']['attachmentId'])) {
