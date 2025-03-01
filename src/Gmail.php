@@ -206,9 +206,9 @@ class Gmail
         ]);
         $message = json_decode($response, true);
         $result = $this->extractHeaders($message);
-        $result['body'] = $this->extractBody($message);
-        $result['attachments'] = $this->getAttachmentIds($messageId);
-        if (in_array('UNREAD', $result['labels'])) $this->update($messageId, [], ['UNREAD']);
+        $result['Body'] = $this->extractBody($message);
+        $result['Attachments'] = $this->getAttachmentIds($messageId);
+        if (in_array('UNREAD', $result['Labels'])) $this->update($messageId, [], ['UNREAD']);
         return $result;
     }
 
