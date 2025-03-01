@@ -208,7 +208,7 @@ class Gmail
         $result = $this->extractHeaders($message);
         $result['body'] = $this->extractBody($message);
         $result['attachments'] = $this->getAttachmentIds($messageId);
-        $this->update($messageId, [], ['UNREAD']);
+        if (in_array('UNREAD', $result['labels'])) $this->update($messageId, [], ['UNREAD']);
         return $result;
     }
 
