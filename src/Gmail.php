@@ -214,22 +214,25 @@ class Gmail
 
     private function extractBody(array $message): string
     {
-        $body = '';
+        $plainText = '';
+        $htmlText = '';
+
         if (isset($message['payload']['parts'])) {
             foreach ($message['payload']['parts'] as $part) {
-                if (isset($part['body']['data'])) {
-                    $body .= base64_decode(str_replace(['-', '_'], ['+', '/'], $part['body']['data']));
-                } elseif (isset($part['parts'])) {
-                    foreach ($part['parts'] as $subpart) {
-                        if (isset($subpart['body']['data'])) {
-                            $body .= base64_decode(str_replace(['-', '_'], ['+', '/'], $subpart['body']['data']));
-                        }
-                    }
+                if ($part['mimeType'] === 'text/plain' && isset($part['body']['data'])) {
+                    // Prefer the plain text part
+                    $plainText = base64_decode(str_replace(['-', '_'], ['+', '/'], $part['body']['data']));
+                } elseif ($part['mimeType'] === 'text/html' && isset($part['body']['data'])) {
+                    // Store the HTML part for fallback
+                    $htmlText = base64_decode(str_replace(['-', '_'], ['+', '/'], $part['body']['data']));
                 }
             }
         }
-        return $body;
+
+        // Return plain text if available, otherwise return stripped HTML
+        return $plainText ?: strip_tags($htmlText);
     }
+
 
     public function update(string $messageId, array $labelsToAdd = [], array $labelsToRemove = []): string
     {
