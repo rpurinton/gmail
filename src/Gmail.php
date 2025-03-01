@@ -3,6 +3,7 @@
 namespace RPurinton\Gmail;
 
 use RPurinton\{Config, HTTPS};
+use RPurinton\Gmail\Exceptions\GmailException;
 
 class Gmail
 {
@@ -24,14 +25,12 @@ class Gmail
         ]);
     }
 
-    public function init()
+    public function init(): void
     {
         $client_id = $this->gmail->config['web']['client_id'];
         $client_secret = $this->gmail->config['web']['client_secret'];
         $redirect_uri = "https://" . $_SERVER["HTTP_HOST"] . $_SERVER["REQUEST_URI"];
-        if (strpos($redirect_uri, "?") !== false) {
-            $redirect_uri = substr($redirect_uri, 0, strpos($redirect_uri, "?"));
-        }
+        if (strpos($redirect_uri, "?") !== false) $redirect_uri = substr($redirect_uri, 0, strpos($redirect_uri, "?"));
         $first_url = $this->gmail->config['web']['auth_uri'] . "?" . http_build_query([
             "client_id"              => $client_id,
             "redirect_uri"           => $redirect_uri,
@@ -59,14 +58,16 @@ class Gmail
             ]),
         ]);
         $response = json_decode($response, true);
-        if (!isset($response['access_token'], $response['refresh_token'], $response['expires_in'])) return;
+        if (!isset($response['access_token'], $response['refresh_token'], $response['expires_in'])) {
+            throw new GmailException('Failed to obtain tokens');
+        }
         $this->gmail->config['access_token'] = $response['access_token'];
         $this->gmail->config['refresh_token'] = $response['refresh_token'];
         $this->gmail->config['expires_at'] = time() + $response['expires_in'] - 30;
         $this->gmail->save();
     }
 
-    public function refresh_token()
+    public function refresh_token(): void
     {
         $response = HTTPS::request([
             'url' => $this->gmail->config['web']['token_uri'],
@@ -81,44 +82,46 @@ class Gmail
         ]);
 
         $response = json_decode($response, true);
+        if (!isset($response['access_token'], $response['expires_in'])) {
+            throw new GmailException('Failed to refresh token');
+        }
         $this->gmail->config['access_token'] = $response['access_token'];
         $this->gmail->config['expires_at'] = time() + $response['expires_in'] - 30;
         $this->gmail->save();
     }
 
-    public function send(string $from, array $to, string $subject, string $body, array $attachments = [], array $cc = [], array $bcc = [])
+    private function ensureTokenIsValid(): void
     {
         if (time() > $this->gmail->config["expires_at"]) {
             $this->refresh_token();
         }
+    }
 
+    public function send(string $from, array $to, string $subject, string $body, array $attachments = [], array $cc = [], array $bcc = []): string
+    {
+        $this->ensureTokenIsValid();
+        $boundary = uniqid('boundary_');
         $rawMessageString = "From: $from\r\n";
         $rawMessageString .= "To: " . implode(", ", $to) . "\r\n";
         $rawMessageString .= "Subject: $subject\r\n";
-        if (!empty($cc)) {
-            $rawMessageString .= "Cc: " . implode(", ", $cc) . "\r\n";
-        }
-        if (!empty($bcc)) {
-            $rawMessageString .= "Bcc: " . implode(", ", $bcc) . "\r\n";
-        }
+        if (!empty($cc)) $rawMessageString .= "Cc: " . implode(", ", $cc) . "\r\n";
+        if (!empty($bcc)) $rawMessageString .= "Bcc: " . implode(", ", $bcc) . "\r\n";
         $rawMessageString .= "MIME-Version: 1.0\r\n";
-        $rawMessageString .= "Content-Type: multipart/mixed; boundary=\"foo_bar_baz\"\r\n";
-        $rawMessageString .= "\r\n--foo_bar_baz\r\n";
+        $rawMessageString .= "Content-Type: multipart/mixed; boundary=\"$boundary\"\r\n";
+        $rawMessageString .= "\r\n--$boundary\r\n";
         $rawMessageString .= "Content-Type: text/html; charset=\"UTF-8\"\r\n";
         $rawMessageString .= "Content-Transfer-Encoding: 7bit\r\n";
         $rawMessageString .= "\r\n$body\r\n";
         foreach ($attachments as $attachment) {
-            if (!file_exists($attachment)) {
-                continue;
-            }
-            $rawMessageString .= "\r\n--foo_bar_baz\r\n";
+            if (!file_exists($attachment)) continue;
+            $rawMessageString .= "\r\n--$boundary\r\n";
             $rawMessageString .= "Content-Type: " . mime_content_type($attachment) . "; name=\"" . basename($attachment) . "\"\r\n";
             $rawMessageString .= "Content-Description: " . basename($attachment) . "\r\n";
             $rawMessageString .= "Content-Disposition: attachment; filename=\"" . basename($attachment) . "\"; size=" . filesize($attachment) . ";\r\n";
             $rawMessageString .= "Content-Transfer-Encoding: base64\r\n";
             $rawMessageString .= "\r\n" . chunk_split(base64_encode(file_get_contents($attachment))) . "\r\n";
         }
-        $rawMessageString .= "\r\n--foo_bar_baz--";
+        $rawMessageString .= "\r\n--$boundary--";
         $response = HTTPS::request([
             'url' => self::SEND_URI,
             'method' => 'POST',
@@ -132,11 +135,9 @@ class Gmail
         return $response;
     }
 
-    public function list($query = '', $maxResults = 10, $pageNumber = 1)
+    public function list(string $query = '', int $maxResults = 10, int $pageNumber = 1): array
     {
-        if (time() > $this->gmail->config["expires_at"]) {
-            $this->refresh_token();
-        }
+        $this->ensureTokenIsValid();
 
         $response = HTTPS::request([
             'url' => self::RECV_URI . '?' . http_build_query([
@@ -154,13 +155,13 @@ class Gmail
         $list = json_decode($response, true);
         $messages = [];
         if (empty($list['messages'])) return $messages;
-        foreach ($list['messages'] as $message) $messages[] = $this->get($message['id']);
+        foreach ($list['messages'] as $message) $messages[] = $this->getHeaders($message['id']);
         return $messages;
     }
 
-    public function get($messageId)
+    private function getHeaders(string $messageId): array
     {
-        if (time() > $this->gmail->config["expires_at"]) $this->refresh_token();
+        $this->ensureTokenIsValid();
         $response = HTTPS::request([
             'url' => self::RECV_URI . '/' . $messageId,
             'method' => 'GET',
@@ -170,23 +171,21 @@ class Gmail
             ],
         ]);
         $message = json_decode($response, true);
-        return $this->extract($message);
+        return $this->extractHeaders($message);
     }
 
-    public function extract(array $message): array
+    private function extractHeaders(array $message): array
     {
         $headers = [
             'id' => $message['id'],
             'thread' => $message['threadId'],
             'labels' => $message['labelIds'],
-            'snippet' => $message['snippet'],
         ];
         $headers['to'] = $headers['cc'] = $headers['bcc'] = [];
         foreach ($message['payload']['headers'] as $header) if (in_array($header['name'], ['From', 'To', 'Cc', 'Bcc', 'Subject', 'Date']))
             if (!in_array($header['name'], ['To', 'Cc', 'Bcc'])) $headers[strtolower($header['name'])] = $header['value'];
             else $headers[strtolower($header['name'])][] = $header['value'];
-        $headers['attachments'] = $this->getAttachmentIds($message['id']);
-        $headers = array_merge(array_flip(['id', 'thread', 'labels', 'from', 'to', 'cc', 'bcc', 'subject', 'date', 'snippet', 'attachments']), $headers);
+        $headers = array_merge(array_flip(['id', 'thread', 'labels', 'from', 'to', 'cc', 'bcc', 'subject', 'date']), $headers);
         if (empty($headers['cc'])) unset($headers['cc']);
         if (empty($headers['bcc'])) unset($headers['bcc']);
         if (empty($headers['attachments'])) unset($headers['attachments']);
@@ -194,9 +193,9 @@ class Gmail
         return $headers;
     }
 
-    public function read($messageId)
+    public function read(string $messageId): array
     {
-        if (time() > $this->gmail->config["expires_at"]) $this->refresh_token();
+        $this->ensureTokenIsValid();
         $response = HTTPS::request([
             'url' => self::RECV_URI . '/' . $messageId,
             'method' => 'GET',
@@ -205,13 +204,36 @@ class Gmail
                 'Accept: application/json',
             ],
         ]);
+        $message = json_decode($response, true);
+        $result = $this->extractHeaders($message);
+        $result['body'] = $this->extractBody($message);
+        $result['attachments'] = $this->getAttachmentIds($messageId);
         $this->update($messageId, [], ['UNREAD']);
-        return json_decode($response, true);
+        return $result;
     }
 
-    public function update($messageId, $labelsToAdd = [], $labelsToRemove = [])
+    private function extractBody(array $message): string
     {
-        if (time() > $this->gmail->config["expires_at"]) $this->refresh_token();
+        $body = '';
+        if (isset($message['payload']['parts'])) {
+            foreach ($message['payload']['parts'] as $part) {
+                if (isset($part['body']['data'])) {
+                    $body .= base64_decode(str_replace(['-', '_'], ['+', '/'], $part['body']['data']));
+                } elseif (isset($part['parts'])) {
+                    foreach ($part['parts'] as $subpart) {
+                        if (isset($subpart['body']['data'])) {
+                            $body .= base64_decode(str_replace(['-', '_'], ['+', '/'], $subpart['body']['data']));
+                        }
+                    }
+                }
+            }
+        }
+        return $body;
+    }
+
+    public function update(string $messageId, array $labelsToAdd = [], array $labelsToRemove = []): string
+    {
+        $this->ensureTokenIsValid();
         $response = HTTPS::request([
             'url' => self::RECV_URI . '/' . $messageId . '/modify',
             'method' => 'POST',
@@ -228,9 +250,9 @@ class Gmail
         return $response;
     }
 
-    public function getAttachmentIds($messageId)
+    public function getAttachmentIds(string $messageId): array
     {
-        if (time() > $this->gmail->config["expires_at"]) $this->refresh_token();
+        $this->ensureTokenIsValid();
         $response = HTTPS::request([
             'url' => self::RECV_URI . '/' . $messageId,
             'method' => 'GET',
@@ -257,7 +279,6 @@ class Gmail
         return $attachmentIds;
     }
 }
-
 /*Array
 (
     [id] => 195444c186cd34af
