@@ -189,6 +189,7 @@ class Gmail
         $headers = array_merge(array_flip(['id', 'thread', 'labels', 'from', 'to', 'cc', 'bcc', 'subject', 'date', 'snippet', 'attachments']), $headers);
         if (empty($headers['cc'])) unset($headers['cc']);
         if (empty($headers['bcc'])) unset($headers['bcc']);
+        if (empty($headers['attachments'])) unset($headers['attachments']);
         $headers = array_combine(array_map('ucfirst', array_keys($headers)), $headers);
         return $headers;
     }
