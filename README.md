@@ -41,10 +41,10 @@ composer require rpurinton/gmail
 ### API Methods
 
 - **`send()`**: Send an email with optional attachments, CC, and BCC.
-- **`listMessages()`**: List messages based on a query and maximum results.
-- **`getMessage()`**: Retrieve a specific message by ID.
-- **`deleteMessage()`**: Delete a specific message by ID.
-- **`getAttachmentId()`**: Retrieve attachment IDs from a message.
+- **`list()`**: List messages based on a query and maximum results.
+- **`read()`**: Retrieve a specific message by ID.
+- **`delete()`**: Delete messages in batch.
+- **`getAttachmentIds()`**: Retrieve attachment IDs from a message.
 
 ## Examples
 
