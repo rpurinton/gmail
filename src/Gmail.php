@@ -230,14 +230,13 @@ class Gmail
             ]);
 
             $list = json_decode($response, true);
-            $messages = [];
-            if (empty($list['messages'])) {
-                return $messages;
-            }
-            foreach ($list['messages'] as $message) {
-                $messages[] = $this->getHeaders($message['id']);
-            }
-
+            $messages = [
+                'Total Results' => $list['resultSizeEstimate'],
+                'Showing Results' => count($list['messages']),
+                'Page' => $pageNumber . " of " . ceil($list['resultSizeEstimate'] / $maxResults),
+            ];
+            if (empty($list['messages'])) return $messages;
+            foreach ($list['messages'] as $message) $messages[] = $this->getHeaders($message['id']);
             return $messages;
         } catch (\Exception $e) {
             throw new GmailException("Error listing messages: " . $e->getMessage(), $e->getCode(), $e);
