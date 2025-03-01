@@ -244,6 +244,8 @@ class Gmail
                     $attachmentIds[] = [
                         'filename' => $part['filename'],
                         'attachmentId' => $part['body']['attachmentId'],
+                        'size' => $part['body']['size'],
+                        'contentType' => $part['mimeType'],
                     ];
                 }
             }
