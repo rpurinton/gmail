@@ -183,7 +183,8 @@ class Gmail
         ];
         foreach ($message['payload']['headers'] as $header) {
             if (in_array($header['name'], ['From', 'To', 'Cc', 'Bcc', 'Subject', 'Date'])) {
-                $headers[strtolower($header['name'])] = $header['value'];
+                if (!in_array($header['name'], ['To', 'Cc', 'Bcc'])) $headers[$header['name']] = $header['value'];
+                else $headers[$header['name']][] = $header['value'];
             }
         }
         $headers['attachments'] = $this->getAttachmentIds($message['id']);
