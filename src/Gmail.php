@@ -208,7 +208,10 @@ class Gmail
         $result = $this->extractHeaders($message);
         $result['Body'] = $this->extractBody($message);
         $result['Attachments'] = $this->getAttachmentIds($messageId);
-        if (in_array('UNREAD', $result['Labels'])) $this->update($messageId, [], ['UNREAD']);
+        if (in_array('UNREAD', $result['Labels'])) {
+            $result['Labels'] = array_diff($result['Labels'], ['UNREAD']);
+            $this->update($messageId, [], ['UNREAD']);
+        }
         return $result;
     }
 
