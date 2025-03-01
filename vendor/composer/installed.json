@@ -1,14 +1,9 @@
 {
-    "_readme": [
-        "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
-        "This file is @generated automatically"
-    ],
-    "content-hash": "7a63133e923ebea9b81263fd0c3f48e8",
     "packages": [
         {
             "name": "rpurinton/config",
             "version": "1.0.24",
+            "version_normalized": "1.0.24.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/rpurinton/config.git",
@@ -24,7 +19,9 @@
                 "ext-json": "*",
                 "php": "^8.0"
             },
+            "time": "2025-02-26T20:31:02+00:00",
             "type": "library",
+            "installation-source": "dist",
             "autoload": {
                 "psr-4": {
                     "RPurinton\\": "src/"
@@ -45,11 +42,12 @@
                 "issues": "https://github.com/rpurinton/config/issues",
                 "source": "https://github.com/rpurinton/config/tree/1.0.24"
             },
-            "time": "2025-02-26T20:31:02+00:00"
+            "install-path": "../rpurinton/config"
         },
         {
             "name": "rpurinton/https",
             "version": "1.0.18",
+            "version_normalized": "1.0.18.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/rpurinton/https.git",
@@ -65,7 +63,9 @@
                 "ext-curl": "*",
                 "php": "^8.0"
             },
+            "time": "2025-02-25T22:43:21+00:00",
             "type": "library",
+            "installation-source": "dist",
             "autoload": {
                 "psr-4": {
                     "RPurinton\\": "src/"
@@ -86,16 +86,9 @@
                 "issues": "https://github.com/rpurinton/https/issues",
                 "source": "https://github.com/rpurinton/https/tree/1.0.18"
             },
-            "time": "2025-02-25T22:43:21+00:00"
+            "install-path": "../rpurinton/https"
         }
     ],
-    "packages-dev": [],
-    "aliases": [],
-    "minimum-stability": "stable",
-    "stability-flags": {},
-    "prefer-stable": false,
-    "prefer-lowest": false,
-    "platform": {},
-    "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "dev": true,
+    "dev-package-names": []
 }
