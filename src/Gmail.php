@@ -181,14 +181,15 @@ class Gmail
             'labels' => $message['labelIds'],
             'Snippet' => $message['snippet'],
         ];
-        foreach ($message['payload']['headers'] as $header) {
-            if (in_array($header['name'], ['From', 'To', 'Cc', 'Bcc', 'Subject', 'Date'])) {
-                if (!in_array($header['name'], ['To', 'Cc', 'Bcc'])) $headers[$header['name']] = $header['value'];
-                else $headers[$header['name']][] = $header['value'];
-            }
-        }
+        $headers['to'] = $headers['cc'] = $headers['bcc'] = [];
+        foreach ($message['payload']['headers'] as $header) if (in_array($header['name'], ['From', 'To', 'Cc', 'Bcc', 'Subject', 'Date']))
+            if (!in_array($header['name'], ['To', 'Cc', 'Bcc'])) $headers[strtolower($header['name'])] = $header['value'];
+            else $headers[strtolower($header['name'])][] = $header['value'];
         $headers['attachments'] = $this->getAttachmentIds($message['id']);
         $headers = array_merge(array_flip(['id', 'thread', 'labels', 'from', 'to', 'cc', 'bcc', 'subject', 'date', 'snippet', 'attachments']), $headers);
+        if (empty($headers['cc'])) unset($headers['cc']);
+        if (empty($headers['bcc'])) unset($headers['bcc']);
+        $headers = array_combine(array_map('ucfirst', array_keys($headers)), $headers);
         return $headers;
     }
 
