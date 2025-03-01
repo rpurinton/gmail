@@ -1,8 +1,8 @@
 <?php return array(
     'root' => array(
         'name' => 'rpurinton/gmail',
-        'pretty_version' => '1.0.22',
-        'version' => '1.0.22.0',
+        'pretty_version' => '1.0.23',
+        'version' => '1.0.23.0',
         'reference' => null,
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
@@ -20,8 +20,8 @@
             'dev_requirement' => false,
         ),
         'rpurinton/gmail' => array(
-            'pretty_version' => '1.0.22',
-            'version' => '1.0.22.0',
+            'pretty_version' => '1.0.23',
+            'version' => '1.0.23.0',
             'reference' => null,
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
