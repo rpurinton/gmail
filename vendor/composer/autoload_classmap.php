@@ -7,14 +7,4 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
-    'RPurinton\\Config' => $vendorDir . '/rpurinton/config/src/Config.php',
-    'RPurinton\\Exceptions\\ConfigException' => $vendorDir . '/rpurinton/config/src/Exceptions/ConfigException.php',
-    'RPurinton\\Exceptions\\HTTPSException' => $vendorDir . '/rpurinton/https/src/Exceptions/HTTPSException.php',
-    'RPurinton\\Gmail\\Exceptions\\GmailException' => $baseDir . '/src/Exceptions/GmailException.php',
-    'RPurinton\\Gmail\\Exceptions\\GmailValidatorsException' => $baseDir . '/src/Exceptions/GmailValidatorsException.php',
-    'RPurinton\\Gmail\\Gmail' => $baseDir . '/src/Gmail.php',
-    'RPurinton\\Gmail\\Validators\\GmailValidators' => $baseDir . '/src/Validators/GmailValidators.php',
-    'RPurinton\\HTTPS' => $vendorDir . '/rpurinton/https/src/HTTPS.php',
-    'RPurinton\\Helpers\\ConfigHelpers' => $vendorDir . '/rpurinton/config/src/Helpers/ConfigHelpers.php',
-    'RPurinton\\Validators\\ConfigValidators' => $vendorDir . '/rpurinton/config/src/Validators/ConfigValidators.php',
 );

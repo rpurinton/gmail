@@ -28,16 +28,6 @@ class ComposerStaticInit39f6f47265a1b253c21835a2b5b79e2b
 
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
-        'RPurinton\\Config' => __DIR__ . '/..' . '/rpurinton/config/src/Config.php',
-        'RPurinton\\Exceptions\\ConfigException' => __DIR__ . '/..' . '/rpurinton/config/src/Exceptions/ConfigException.php',
-        'RPurinton\\Exceptions\\HTTPSException' => __DIR__ . '/..' . '/rpurinton/https/src/Exceptions/HTTPSException.php',
-        'RPurinton\\Gmail\\Exceptions\\GmailException' => __DIR__ . '/../..' . '/src/Exceptions/GmailException.php',
-        'RPurinton\\Gmail\\Exceptions\\GmailValidatorsException' => __DIR__ . '/../..' . '/src/Exceptions/GmailValidatorsException.php',
-        'RPurinton\\Gmail\\Gmail' => __DIR__ . '/../..' . '/src/Gmail.php',
-        'RPurinton\\Gmail\\Validators\\GmailValidators' => __DIR__ . '/../..' . '/src/Validators/GmailValidators.php',
-        'RPurinton\\HTTPS' => __DIR__ . '/..' . '/rpurinton/https/src/HTTPS.php',
-        'RPurinton\\Helpers\\ConfigHelpers' => __DIR__ . '/..' . '/rpurinton/config/src/Helpers/ConfigHelpers.php',
-        'RPurinton\\Validators\\ConfigValidators' => __DIR__ . '/..' . '/rpurinton/config/src/Validators/ConfigValidators.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
