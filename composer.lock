@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d9a0b150452d7f7e24e49dae5ebd2aa3",
+    "content-hash": "098292739d411458b8960d161c3b0048",
     "packages": [
         {
             "name": "rpurinton/config",
@@ -49,16 +49,16 @@
         },
         {
             "name": "rpurinton/https",
-            "version": "1.0.19",
+            "version": "1.0.26",
             "source": {
                 "type": "git",
                 "url": "https://github.com/rpurinton/https.git",
-                "reference": "eb764d0ea9067090191cc2affb9597df946178a4"
+                "reference": "e4cbd8e04b1f4e3ee02212de13c9fa9dcdfc76da"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rpurinton/https/zipball/eb764d0ea9067090191cc2affb9597df946178a4",
-                "reference": "eb764d0ea9067090191cc2affb9597df946178a4",
+                "url": "https://api.github.com/repos/rpurinton/https/zipball/e4cbd8e04b1f4e3ee02212de13c9fa9dcdfc76da",
+                "reference": "e4cbd8e04b1f4e3ee02212de13c9fa9dcdfc76da",
                 "shasum": ""
             },
             "require": {
@@ -84,9 +84,9 @@
             "description": "Abstract Static Class for making HTTPS Requests in PHP/Composer",
             "support": {
                 "issues": "https://github.com/rpurinton/https/issues",
-                "source": "https://github.com/rpurinton/https/tree/1.0.19"
+                "source": "https://github.com/rpurinton/https/tree/1.0.26"
             },
-            "time": "2025-03-03T10:29:38+00:00"
+            "time": "2025-03-14T21:13:46+00:00"
         }
     ],
     "packages-dev": [],
